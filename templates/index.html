@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractal de Newton</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #151b28;
+      --border: #262f45;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --error: #f43f5e;
+      --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Topo */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title h1 {
+      font-size: 1.25rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .title p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Layout principal */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .app-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Cartões / Painéis */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-title {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    /* Formulario */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      border-radius: 6px;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus { border-color: var(--accent); }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Botões de atalho (Presets) */
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .preset-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .preset-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    /* Ações */
+    .btn-main {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-main:hover { background: var(--accent-hover); }
+
+    .btn-sub {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn-sub:hover { border-color: var(--text); }
+
+    /* Visualizador */
+    .viewport {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .placeholder {
+      position: absolute;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    /* Métricas */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .stat-card span {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .stat-card strong {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+    }
+
+    /* Raízes */
+    .roots-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .root-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <header>
+      <div class="title">
+        <h1 id="headerFormula">f(x) = x^10 - x^2 + 1</h1>
+        <p>Plano complexo · Domínio [-2, 2]</p>
+      </div>
+    </header>
+
+    <div class="app-layout">
+
+      <!-- Painel de Controle -->
+      <div class="panel">
+        <div class="panel-title">Parâmetros</div>
+
+        <div class="field">
+          <label for="inFuncao">Polinômio f(x)</label>
+          <input type="text" id="inFuncao" value="x^10 - x^2 + 1">
+          <div class="presets">
+            <button class="preset-btn" onclick="setPreset('x^10 - x^2 + 1')">x¹⁰-x²+1</button>
+            <button class="preset-btn" onclick="setPreset('x^3 - 1')">x³-1</button>
+            <button class="preset-btn" onclick="setPreset('x^5 - x + 1')">x⁵-x+1</button>
+            <button class="preset-btn" onclick="setPreset('x^4 - 1')">x⁴-1</button>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="inLargura">Largura (px)</label>
+            <input type="number" id="inLargura" value="600">
+          </div>
+          <div class="field">
+            <label for="inAltura">Altura (px)</label>
+            <input type="number" id="inAltura" value="600">
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="inIteracoes">Iterações</label>
+            <input type="number" id="inIteracoes" value="50">
+          </div>
+          <div class="field">
+            <label for="inPasso">Passo</label>
+            <input type="number" id="inPasso" value="1" step="0.1">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="inTolerancia">Tolerância</label>
+          <input type="number" id="inTolerancia" value="0.00001" step="0.00001">
+        </div>
+
+        <button class="btn-main" id="btnGerar">Gerar Fractal</button>
+        <button class="btn-sub" id="btnBaixar">Baixar PNG</button>
+
+        <div class="panel-title" style="margin-top: 8px;">Raízes Encontradas</div>
+        <div class="roots-container" id="rootsList">
+          <span style="color: var(--muted)">Aguardando geração...</span>
+        </div>
+      </div>
+
+      <!-- Área de Saída -->
+      <div class="panel">
+        <div class="viewport">
+          <canvas id="fractalCanvas" width="600" height="600"></canvas>
+          <div class="placeholder" id="placeholder">Clique em "Gerar Fractal"</div>
+        </div>
+
+        <div class="stats">
+          <div class="stat-card">
+            <span>Raízes</span>
+            <strong id="statRaizes">—</strong>
+          </div>
+          <div class="stat-card">
+            <span>Sem Convergência</span>
+            <strong id="statNaoConv">—</strong>
+          </div>
+          <div class="stat-card">
+            <span>Tempo</span>
+            <strong id="statTempo">—</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+  function setPreset(val) {
+    document.getElementById('inFuncao').value = val;
+    document.getElementById('headerFormula').innerText = 'f(x) = ' + val;
+  }
+
+  document.getElementById('inFuncao').addEventListener('input', (e) => {
+    document.getElementById('headerFormula').innerText = 'f(x) = ' + (e.target.value || '...');
+  });
+
+  async function gerarFractal() {
+    const btn = document.getElementById('btnGerar');
+    const btnBaixar = document.getElementById('btnBaixar');
+    const placeholder = document.getElementById('placeholder');
+    const canvas = document.getElementById('fractalCanvas');
+    const ctx = canvas.getContext('2d');
+
+    btn.disabled = true;
+    placeholder.style.display = 'block';
+    placeholder.innerText = 'Calculando convergências...';
+
+    const payload = {
+      polinomio: document.getElementById('inFuncao').value,
+      largura: parseInt(document.getElementById('inLargura').value),
+      altura: parseInt(document.getElementById('inAltura').value),
+      qtd_chutes: parseInt(document.getElementById('inIteracoes').value),
+      fator_passo: parseFloat(document.getElementById('inPasso').value),
+      tolerancia: parseFloat(document.getElementById('inTolerancia').value)
+    };
+
+    try {
+      const response = await fetch('/api/gerar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (data.sucesso) {
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = payload.largura;
+          canvas.height = payload.altura;
+          ctx.drawImage(img, 0, 0);
+          placeholder.style.display = 'none';
+        };
+        img.src = data.imagem;
+
+        // Atualizar estatísticas e lista de raízes
+        document.getElementById('statRaizes').innerText = data.qtd_raizes;
+        document.getElementById('statNaoConv').innerText = data.pixels_sem_convergencia;
+        document.getElementById('statTempo').innerText = data.tempo;
+
+        const rootsList = document.getElementById('rootsList');
+        rootsList.innerHTML = data.raizes.map(r => `<div class="root-item">• ${r}</div>`).join('');
+
+        // Habilitar download
+        btnBaixar.onclick = () => {
+          const a = document.createElement('a');
+          a.download = 'fractal_newton.png';
+          a.href = data.imagem;
+          a.click();
+        };
+      } else {
+        alert('Erro no cálculo: ' + data.erro);
+        placeholder.innerText = 'Erro ao processar.';
+      }
+    } catch (err) {
+      alert('Erro ao conectar com o servidor Python.');
+      placeholder.innerText = 'Falha na conexão.';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('btnGerar').addEventListener('click', gerarFractal);
+  window.onload = gerarFractal;
+</script>
+
+</body>
+</html>
