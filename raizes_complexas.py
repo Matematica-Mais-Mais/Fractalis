@@ -20,7 +20,7 @@ func_derivada = lambdify(x, derivada_polinomio, "numpy")
 #Constantes do Programa
 LARGURA_IMAGEM = 1000
 ALTURA_IMAGEM = 1000
-TOLERANCIA = 0.00001
+TOLERANCIA = 1
 QTD_CHUTES = 50
 FATOR_PASSO = 1
 
@@ -42,7 +42,6 @@ def metodo_de_newton_vetorizado(pontos_iniciais):
     for _ in range(QTD_CHUTES):
         # Calcula a derivada de todos os pontos de uma vez
         valor_derivada = func_derivada(pontos_atuais)
-        print("xablau")
 
         # Desliga o interruptor desses pontos que possuem divisão por zero
         travados_por_derivada_zero = pontos_ativos & (valor_derivada == 0)
@@ -87,11 +86,15 @@ def colorir_por_raiz(valores_finais, pontos_ativos):
 
 
 # ===============LÓGICA===============
-malha_complexa = criar_malha_complexa(LARGURA_IMAGEM, ALTURA_IMAGEM)
-valores_finais, pontos_ativos = metodo_de_newton_vetorizado(malha_complexa)
-cores_da_imagem, pixels_sem_convergencia = colorir_por_raiz(valores_finais, pontos_ativos)
+# Só roda ao executar este arquivo diretamente (python raizes_complexas.py).
+# Quando importado pelo app.py / Flask, esse bloco NÃO deve executar —
+# senão o servidor trava minutos calculando um fractal 1000x1000 antes de subir.
+if __name__ == "__main__":
+    malha_complexa = criar_malha_complexa(LARGURA_IMAGEM, ALTURA_IMAGEM)
+    valores_finais, pontos_ativos = metodo_de_newton_vetorizado(malha_complexa)
+    cores_da_imagem, pixels_sem_convergencia = colorir_por_raiz(valores_finais, pontos_ativos)
 
-print(f"Pixels sem raiz reconhecida: {pixels_sem_convergencia.sum()}")
+    print(f"Pixels sem raiz reconhecida: {pixels_sem_convergencia.sum()}")
 
-imagem = Image.fromarray(cores_da_imagem)
-imagem.show()
+    imagem = Image.fromarray(cores_da_imagem)
+    imagem.show()
