@@ -3,21 +3,9 @@ from PIL import Image
 import sys
 from sympy import diff, lambdify, solve, symbols
 
-# ===============CONFIGURAÇÃO DO POLINÔMIO===============
-x = symbols("x")
-polinomio = x**2 - 1
-derivada_polinomio = diff(polinomio, x)
-
-# Para cada raiz do polinomio, converta em um valor númerico e depois transforme em um valor complexo
-raizes_do_polinomio = [r.evalf() for r in solve(polinomio, x)]
-raizes_do_polinomio = [complex(r) for r in raizes_do_polinomio]
-print(raizes_do_polinomio)
-
-# Avaliação numérica rápida (lambdify converte a expressão simbólica em uma função Python normal que usa operações do NumPy que calcula tudo de uma vez)
-func_polinomio = lambdify(x, polinomio, "numpy")
-func_derivada = lambdify(x, derivada_polinomio, "numpy")
-
 #Constantes do Programa
+# Esses valores só valem quando o script roda sozinho (área de debug, lá embaixo).
+# Quando importado pelo app.py, o Flask sobrescreve todos eles a cada requisição.
 LARGURA_IMAGEM = 1000
 ALTURA_IMAGEM = 1000
 TOLERANCIA = 1
@@ -85,11 +73,27 @@ def colorir_por_raiz(valores_finais, pontos_ativos):
     return cores, pixels_sem_convergencia
 
 
-# ===============LÓGICA===============
-# Só roda ao executar este arquivo diretamente (python raizes_complexas.py).
-# Quando importado pelo app.py / Flask, esse bloco NÃO deve executar —
-# senão o servidor trava minutos calculando um fractal 1000x1000 antes de subir.
-if __name__ == "__main__":
+# ===============ÁREA DE DEBUG===============
+# Tudo aqui dentro só roda se você executar o python raizes_complexas.py
+# Quando o app.py importa este módulo (uso normal, via interface web), esta
+# função nunca é chamada — o Flask define seu próprio polinômio a partir do
+# que o usuário digitou e chama as funções acima diretamente.
+def debug():
+    global func_polinomio, func_derivada, raizes_do_polinomio
+
+    # Troque o polinômio abaixo à vontade para testar rapidamente, sem precisar
+    # subir o Flask nem passar pela interface web.
+    x = symbols("x")
+    polinomio_debug = x**2 - 1
+    derivada_debug = diff(polinomio_debug, x)
+
+    raizes = [complex(r.evalf()) for r in solve(polinomio_debug, x)]
+    print("Raízes encontradas:", raizes)
+
+    func_polinomio = lambdify(x, polinomio_debug, "numpy")
+    func_derivada = lambdify(x, derivada_debug, "numpy")
+    raizes_do_polinomio = raizes
+
     malha_complexa = criar_malha_complexa(LARGURA_IMAGEM, ALTURA_IMAGEM)
     valores_finais, pontos_ativos = metodo_de_newton_vetorizado(malha_complexa)
     cores_da_imagem, pixels_sem_convergencia = colorir_por_raiz(valores_finais, pontos_ativos)
@@ -98,3 +102,6 @@ if __name__ == "__main__":
 
     imagem = Image.fromarray(cores_da_imagem)
     imagem.show()
+
+if __name__ == "__main__":
+    debug()
