@@ -5,13 +5,13 @@ from sympy import diff, lambdify, solve, symbols
 
 # ===============CONFIGURAÇÃO DO POLINÔMIO===============
 x = symbols("x")
-polinomio = x**3 - 1
+polinomio = x**2 - 1
 derivada_polinomio = diff(polinomio, x)
 
 # Para cada raiz do polinomio, converta em um valor númerico e depois transforme em um valor complexo
 raizes_do_polinomio = [r.evalf() for r in solve(polinomio, x)]
 raizes_do_polinomio = [complex(r) for r in raizes_do_polinomio]
-print(len(raizes_do_polinomio))
+print(raizes_do_polinomio)
 
 # Avaliação numérica rápida (lambdify converte a expressão simbólica em uma função Python normal que usa operações do NumPy que calcula tudo de uma vez)
 func_polinomio = lambdify(x, polinomio, "numpy")
