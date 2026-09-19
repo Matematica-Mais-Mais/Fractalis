@@ -1,8 +1,9 @@
 import numpy as np
 from PIL import Image
 import sys
+import colorsys
 from sympy import diff, lambdify, solve, symbols
-
+ 
 #Constantes do Programa
 # Esses valores só valem quando o script roda sozinho (área de debug, lá embaixo).
 # Quando importado pelo app.py, o Flask sobrescreve todos eles a cada requisição.
@@ -44,6 +45,24 @@ def metodo_de_newton_vetorizado(pontos_iniciais):
 
     return pontos_atuais, pontos_ativos
 
+def gerar_paleta_harmonica(num_cores, saturacao=0.7, brilho=0.9):
+    if num_cores <= 0:
+        return []
+    
+    paleta = []
+    
+    for i in range(num_cores):
+        # Divide a roda de cores (0.0 a 1.0) em partes iguais
+        hue = i / num_cores
+        
+        # Converte HSV para RGB
+        r, g, b = colorsys.hsv_to_rgb(hue, saturacao, brilho)
+        
+        # Converte de 0.0-1.0 para a escala RGB 0-255
+        cor_rgb = (int(r * 255), int(g * 255), int(b * 255))
+        paleta.append(cor_rgb)
+        
+    return paleta
 
 def colorir_por_raiz(valores_finais, pontos_ativos):
     raizes_array = np.array(raizes_do_polinomio)
@@ -55,16 +74,12 @@ def colorir_por_raiz(valores_finais, pontos_ativos):
 
     menor_distancia = distancias_ate_raizes.min(axis=-1)
 
-    cores = np.zeros((*valores_finais.shape, 3), dtype=np.uint8)
-    cores[indice_raiz_mais_proxima == 0] = (255, 0, 0)
-    cores[indice_raiz_mais_proxima == 1] = (0, 255, 0)
-    cores[indice_raiz_mais_proxima == 2] = (0, 0, 255)
-    cores[indice_raiz_mais_proxima == 3] = (255, 255, 0)
+    paleta = gerar_paleta_harmonica(numero_de_raizes)
 
-    cores[indice_raiz_mais_proxima == 4] = (255, 0, 255)
-    cores[indice_raiz_mais_proxima == 5] = (0, 255, 255)
-    cores[indice_raiz_mais_proxima == 6] = (255, 20, 147)
-    cores[indice_raiz_mais_proxima == 7] = (255, 165, 0)
+    cores = np.zeros((*valores_finais.shape, 3), dtype=np.uint8)
+
+    for i in range(0, numero_de_raizes):
+        cores[indice_raiz_mais_proxima == i] = paleta[i]
 
     cores[~pontos_ativos] = (0, 0, 0)
     cores[menor_distancia >= TOLERANCIA] = (255, 255, 255)
