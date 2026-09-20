@@ -116,6 +116,34 @@ input:focus { border-color: var(--accent); }
   gap: 10px;
 }
 
+/* Checkbox (ex.: ligar/desligar o brilho) */
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Slider (ex.: brilho máximo) */
+input[type="range"] {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* Botões de atalho (Presets) */
 .presets {
   display: flex;

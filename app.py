@@ -56,14 +56,30 @@ def gerar():
         script_orig.FATOR_PASSO = float(dados.get("fator_passo", 1.0))
         script_orig.TOLERANCIA = float(dados.get("tolerancia", 0.00001))
 
+        # Brilho por velocidade de convergência: o checkbox do site decide se
+        # ele é aplicado; o fator e o teto vêm do input numérico e do slider.
+        usar_brilho = bool(dados.get("usar_brilho", True))
+        script_orig.FATOR_BRILHO = float(dados.get("fator_brilho", script_orig.FATOR_BRILHO))
+        script_orig.BRILHO_MAXIMO = float(dados.get("brilho_maximo", script_orig.BRILHO_MAXIMO))
+
         malha = script_orig.criar_malha_complexa(
             script_orig.LARGURA_IMAGEM, script_orig.ALTURA_IMAGEM
         )
-        valores_finais, pontos_ativos = script_orig.metodo_de_newton_vetorizado(malha)
-        
-        cores, pixels_sem_conv = script_orig.colorir_por_raiz(
-            valores_finais, pontos_ativos, len(raizes)
+        # metodo_de_newton_vetorizado sempre retorna iteracoes_de_convergencia
+        # (o custo extra é mínimo); é só na hora de colorir que decidimos se
+        # ele é usado ou não, de acordo com o checkbox do site.
+        valores_finais, pontos_ativos, iteracoes_de_convergencia = (
+            script_orig.metodo_de_newton_vetorizado(malha)
         )
+
+        if usar_brilho:
+            cores, pixels_sem_conv = script_orig.colorir_por_raiz(
+                valores_finais, pontos_ativos, len(raizes), iteracoes_de_convergencia
+            )
+        else:
+            cores, pixels_sem_conv = script_orig.colorir_por_raiz(
+                valores_finais, pontos_ativos, len(raizes)
+            )
 
         img = Image.fromarray(cores)
         buffer = io.BytesIO()
