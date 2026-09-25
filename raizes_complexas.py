@@ -33,7 +33,7 @@ TOLERANCIA_BRILHO = 1e-6
 # escalar antiga do projeto (aquela com if/elif por pixel), só que
 # vetorizada e generalizada para qualquer número de raízes.
 FATOR_BRILHO = 20
-BRILHO_MAXIMO = 100
+BRILHO_MAXIMO = 300
 EH_SOMBRA = False
 
 # [-2, 2] => Domínio (real e imaginário)
