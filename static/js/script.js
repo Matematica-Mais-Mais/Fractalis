@@ -7,6 +7,24 @@ document.getElementById('inFuncao').addEventListener('input', (e) => {
   document.getElementById('headerFormula').innerText = 'f(x) = ' + (e.target.value || '...');
 });
 
+// ===== Controles de brilho =====
+const inUsarBrilho = document.getElementById('inUsarBrilho');
+const brilhoControls = document.getElementById('brilhoControls');
+const inBrilhoMaximo = document.getElementById('inBrilhoMaximo');
+const valBrilhoMaximo = document.getElementById('valBrilhoMaximo');
+
+function atualizarVisibilidadeBrilho() {
+  // brilhoControls usa a classe "row-2" (display: grid) quando visível
+  brilhoControls.style.display = inUsarBrilho.checked ? 'grid' : 'none';
+}
+
+inUsarBrilho.addEventListener('change', atualizarVisibilidadeBrilho);
+atualizarVisibilidadeBrilho();
+
+inBrilhoMaximo.addEventListener('input', () => {
+  valBrilhoMaximo.innerText = inBrilhoMaximo.value;
+});
+
 async function gerarFractal() {
   const btn = document.getElementById('btnGerar');
   const btnBaixar = document.getElementById('btnBaixar');
@@ -24,7 +42,10 @@ async function gerarFractal() {
     altura: parseInt(document.getElementById('inAltura').value),
     qtd_chutes: parseInt(document.getElementById('inIteracoes').value),
     fator_passo: parseFloat(document.getElementById('inPasso').value),
-    tolerancia: parseFloat(document.getElementById('inTolerancia').value)
+    tolerancia: parseFloat(document.getElementById('inTolerancia').value),
+    usar_brilho: inUsarBrilho.checked,
+    fator_brilho: parseFloat(document.getElementById('inFatorBrilho').value),
+    brilho_maximo: parseFloat(inBrilhoMaximo.value)
   };
 
   try {
@@ -74,4 +95,3 @@ async function gerarFractal() {
 }
 
 document.getElementById('btnGerar').addEventListener('click', gerarFractal);
-window.onload = gerarFractal;
