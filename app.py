@@ -44,7 +44,7 @@ def gerar():
         polinomio_expr = sympify(expr_str)
         derivada_expr = diff(polinomio_expr, x)
 
-        raizes = [complex(r.evalf()) for r in solve(polinomio_expr, x)]
+        raizes = script_orig.encontrar_raizes(polinomio_expr, x)
 
         script_orig.func_polinomio = lambdify(x, polinomio_expr, "numpy")
         script_orig.func_derivada = lambdify(x, derivada_expr, "numpy")
@@ -60,7 +60,10 @@ def gerar():
             script_orig.LARGURA_IMAGEM, script_orig.ALTURA_IMAGEM
         )
         valores_finais, pontos_ativos = script_orig.metodo_de_newton_vetorizado(malha)
-        cores, pixels_sem_conv = script_orig.colorir_por_raiz(valores_finais, pontos_ativos)
+        
+        cores, pixels_sem_conv = script_orig.colorir_por_raiz(
+            valores_finais, pontos_ativos, len(raizes)
+        )
 
         img = Image.fromarray(cores)
         buffer = io.BytesIO()

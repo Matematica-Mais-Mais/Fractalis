@@ -1,23 +1,18 @@
 import numpy as np
 from PIL import Image
 import sys
-from sympy import diff, lambdify, solve, symbols
+import colorsys
+from sympy import diff, lambdify, solve, symbols, solveset, nsolve, ConditionSet, Interval, pi
 
-# ===============CONFIGURAÇÃO DO POLINÔMIO===============
-x = symbols("x")
-polinomio = x**3 - 1
-derivada_polinomio = diff(polinomio, x)
-
-# Para cada raiz do polinomio, converta em um valor númerico e depois transforme em um valor complexo
-raizes_do_polinomio = [r.evalf() for r in solve(polinomio, x)]
-raizes_do_polinomio = [complex(r) for r in raizes_do_polinomio]
-print(len(raizes_do_polinomio))
-
-# Avaliação numérica rápida (lambdify converte a expressão simbólica em uma função Python normal que usa operações do NumPy que calcula tudo de uma vez)
-func_polinomio = lambdify(x, polinomio, "numpy")
-func_derivada = lambdify(x, derivada_polinomio, "numpy")
-
+# ===============ÁREA DE DEBUG===============
+# Tudo aqui dentro só roda se você executar o python raizes_complexas.py
+# Quando o app.py importa este módulo (uso normal, via interface web), esta
+# função nunca é chamada — o Flask define seu próprio polinômio a partir do
+# que o usuário digitou e chama as funções acima diretamente.
+ 
 #Constantes do Programa
+# Esses valores só valem quando o script roda sozinho (área de debug, lá embaixo).
+# Quando importado pelo app.py, o Flask sobrescreve todos eles a cada requisição.
 LARGURA_IMAGEM = 1000
 ALTURA_IMAGEM = 1000
 TOLERANCIA = 1
@@ -56,8 +51,26 @@ def metodo_de_newton_vetorizado(pontos_iniciais):
 
     return pontos_atuais, pontos_ativos
 
+def gerar_paleta_harmonica(num_cores, saturacao=0.7, brilho=0.9):
+    if num_cores <= 0:
+        return []
+    
+    paleta = []
+    
+    for i in range(num_cores):
+        # Divide a roda de cores (0.0 a 1.0) em partes iguais
+        hue = i / num_cores
+        
+        # Converte HSV para RGB
+        r, g, b = colorsys.hsv_to_rgb(hue, saturacao, brilho)
+        
+        # Converte de 0.0-1.0 para a escala RGB 0-255
+        cor_rgb = (int(r * 255), int(g * 255), int(b * 255))
+        paleta.append(cor_rgb)
+        
+    return paleta
 
-def colorir_por_raiz(valores_finais, pontos_ativos):
+def colorir_por_raiz(valores_finais, pontos_ativos, numero_de_raizes):
     raizes_array = np.array(raizes_do_polinomio)
 
     # Para cada pixel, ele calcula a diferença entre o valor final daquele pixel e todas as N raízes ao mesmo tempo.
@@ -67,16 +80,12 @@ def colorir_por_raiz(valores_finais, pontos_ativos):
 
     menor_distancia = distancias_ate_raizes.min(axis=-1)
 
-    cores = np.zeros((*valores_finais.shape, 3), dtype=np.uint8)
-    cores[indice_raiz_mais_proxima == 0] = (255, 0, 0)
-    cores[indice_raiz_mais_proxima == 1] = (0, 255, 0)
-    cores[indice_raiz_mais_proxima == 2] = (0, 0, 255)
-    cores[indice_raiz_mais_proxima == 3] = (255, 255, 0)
+    paleta = gerar_paleta_harmonica(numero_de_raizes)
 
-    cores[indice_raiz_mais_proxima == 4] = (255, 0, 255)
-    cores[indice_raiz_mais_proxima == 5] = (0, 255, 255)
-    cores[indice_raiz_mais_proxima == 6] = (255, 20, 147)
-    cores[indice_raiz_mais_proxima == 7] = (255, 165, 0)
+    cores = np.zeros((*valores_finais.shape, 3), dtype=np.uint8)
+
+    for i in range(0, numero_de_raizes):
+        cores[indice_raiz_mais_proxima == i] = paleta[i]
 
     cores[~pontos_ativos] = (0, 0, 0)
     cores[menor_distancia >= TOLERANCIA] = (255, 255, 255)
@@ -85,16 +94,66 @@ def colorir_por_raiz(valores_finais, pontos_ativos):
     return cores, pixels_sem_convergencia
 
 
-# ===============LÓGICA===============
-# Só roda ao executar este arquivo diretamente (python raizes_complexas.py).
-# Quando importado pelo app.py / Flask, esse bloco NÃO deve executar —
-# senão o servidor trava minutos calculando um fractal 1000x1000 antes de subir.
-if __name__ == "__main__":
+def encontrar_raizes(polinomio, x, intervalo=None, n_chutes=100, precisao=6):
+    """Aceita polinômio puro, trig pura ou composição (ex: x**2 - cos(x))."""
+    if intervalo is None:
+        intervalo = Interval(-4 * pi, 4 * pi)
+
+    if polinomio.is_polynomial(x):
+        # Polinômio puro -> solve() é exato e mais rápido
+        raizes_do_polinomio = [r.evalf() for r in solve(polinomio, x)]
+    else:
+        # Trigonométrica / transcendental / composição -> tenta solveset
+        # simbólico dentro do intervalo primeiro
+        resultado = solveset(polinomio, x, domain=intervalo)
+
+        if not isinstance(resultado, ConditionSet):
+            # solveset conseguiu -> usa direto (mais preciso)
+            raizes_do_polinomio = [r.evalf() for r in resultado]
+        else:
+            # solveset falhou (equação mista/transcendental complexa) -> nsolve
+            a, b = float(intervalo.start), float(intervalo.end)
+            chutes_iniciais = np.linspace(a, b, n_chutes)
+
+            raizes_encontradas = set()
+            for chute in chutes_iniciais:
+                try:
+                    raiz = nsolve(polinomio, x, chute)
+                    raizes_encontradas.add(round(float(raiz), precisao))
+                except Exception:
+                    pass
+            raizes_do_polinomio = list(raizes_encontradas)
+
+    return [complex(r) for r in raizes_do_polinomio]
+
+
+def debug():
+    global func_polinomio, func_derivada, raizes_do_polinomio
+
+    # Troque o polinômio abaixo à vontade para testar rapidamente, sem precisar
+    # subir o Flask nem passar pela interface web. Agora também aceita
+    # trigonométricas (ex: cos(x)) e composições (ex: x**2 - sin(x)).
+    x = symbols("x")
+    polinomio_debug = x**5 - 1
+    derivada_debug = diff(polinomio_debug, x)
+
+    raizes = encontrar_raizes(polinomio_debug, x)
+    print("Raízes encontradas:", raizes)
+
+    func_polinomio = lambdify(x, polinomio_debug, "numpy")
+    func_derivada = lambdify(x, derivada_debug, "numpy")
+    raizes_do_polinomio = raizes
+    numero_de_raizes = len(raizes)
+
     malha_complexa = criar_malha_complexa(LARGURA_IMAGEM, ALTURA_IMAGEM)
     valores_finais, pontos_ativos = metodo_de_newton_vetorizado(malha_complexa)
-    cores_da_imagem, pixels_sem_convergencia = colorir_por_raiz(valores_finais, pontos_ativos)
+    cores_da_imagem, pixels_sem_convergencia = colorir_por_raiz(valores_finais, pontos_ativos, numero_de_raizes)
 
     print(f"Pixels sem raiz reconhecida: {pixels_sem_convergencia.sum()}")
 
     imagem = Image.fromarray(cores_da_imagem)
     imagem.show()
+
+
+if __name__ == "__main__":
+    debug() 
