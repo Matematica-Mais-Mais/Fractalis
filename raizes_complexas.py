@@ -4,6 +4,8 @@ import sys
 import colorsys
 from sympy import diff, lambdify, solve, symbols, solveset, nsolve, ConditionSet, Interval, pi
 
+from geradorDePaletas import gerador_de_paletas_PD
+
 # ===============ÁREA DE DEBUG===============
 # Tudo aqui dentro só roda se você executar o python raizes_complexas.py
 # Quando o app.py importa este módulo (uso normal, via interface web), esta
@@ -77,7 +79,7 @@ def metodo_de_newton_vetorizado(pontos_iniciais):
 
     return pontos_atuais, pontos_ativos, iteracao_de_convergencia
 
-def gerar_paleta_harmonica(num_cores, saturacao=0.7, brilho=0.9):
+def gerar_paleta_automatica(num_cores, saturacao=0.7, brilho=0.9):
     if num_cores <= 0:
         return []
     
@@ -96,7 +98,7 @@ def gerar_paleta_harmonica(num_cores, saturacao=0.7, brilho=0.9):
         
     return paleta
 
-def colorir_por_raiz(valores_finais, pontos_ativos, numero_de_raizes, iteracoes_de_convergencia=None):
+def colorir_por_raiz(valores_finais, pontos_ativos, numero_de_raizes, iteracoes_de_convergencia=None, nome_paleta=None):
     raizes_array = np.array(raizes_do_polinomio)
 
     # Para cada pixel, ele calcula a diferença entre o valor final daquele pixel e todas as N raízes ao mesmo tempo.
@@ -106,7 +108,10 @@ def colorir_por_raiz(valores_finais, pontos_ativos, numero_de_raizes, iteracoes_
 
     menor_distancia = distancias_ate_raizes.min(axis=-1)
 
-    paleta = gerar_paleta_harmonica(numero_de_raizes)
+    if nome_paleta is None:
+        paleta = gerar_paleta_automatica(numero_de_raizes)
+    else:
+        paleta = gerador_de_paletas_PD(nome_paleta, numero_de_raizes)
     paleta_array = np.array(paleta, dtype=np.int16)  # shape (numero_de_raizes, 3)
 
     # Cor "pura" de cada pixel, olhando só pra raiz mais próxima.

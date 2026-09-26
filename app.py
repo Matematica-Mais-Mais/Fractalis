@@ -62,6 +62,11 @@ def gerar():
         script_orig.FATOR_BRILHO = float(dados.get("fator_brilho", script_orig.FATOR_BRILHO))
         script_orig.BRILHO_MAXIMO = float(dados.get("brilho_maximo", script_orig.BRILHO_MAXIMO))
 
+        # Paleta de cores: "" ou ausente = opção automática (gerar_paleta_harmonica,
+        # dentro de colorir_por_raiz); qualquer outro valor (ex.: "homeblue") usa a
+        # paleta nomeada correspondente em paletas.py.
+        nome_paleta = dados.get("paleta") or None
+
         malha = script_orig.criar_malha_complexa(
             script_orig.LARGURA_IMAGEM, script_orig.ALTURA_IMAGEM
         )
@@ -74,11 +79,13 @@ def gerar():
 
         if usar_brilho:
             cores, pixels_sem_conv = script_orig.colorir_por_raiz(
-                valores_finais, pontos_ativos, len(raizes), iteracoes_de_convergencia
+                valores_finais, pontos_ativos, len(raizes), iteracoes_de_convergencia,
+                nome_paleta=nome_paleta,
             )
         else:
             cores, pixels_sem_conv = script_orig.colorir_por_raiz(
-                valores_finais, pontos_ativos, len(raizes)
+                valores_finais, pontos_ativos, len(raizes),
+                nome_paleta=nome_paleta,
             )
 
         img = Image.fromarray(cores)

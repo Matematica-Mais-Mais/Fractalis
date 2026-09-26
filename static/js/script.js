@@ -25,6 +25,15 @@ inBrilhoMaximo.addEventListener('input', () => {
   valBrilhoMaximo.innerText = inBrilhoMaximo.value;
 });
 
+// ===== Seletor de paleta de cores =====
+// "" = opção automática (gerar_paleta_harmonica); outros valores (ex.:
+// "homeblue") usam a paleta nomeada correspondente em geradorDePaletas.py.
+function setPaleta(val, botaoClicado) {
+  document.getElementById('inPaleta').value = val;
+  document.querySelectorAll('.palette-btn').forEach((btn) => btn.classList.remove('active'));
+  botaoClicado.classList.add('active');
+}
+
 async function gerarFractal() {
   const btn = document.getElementById('btnGerar');
   const btnBaixar = document.getElementById('btnBaixar');
@@ -45,7 +54,8 @@ async function gerarFractal() {
     tolerancia: parseFloat(document.getElementById('inTolerancia').value),
     usar_brilho: inUsarBrilho.checked,
     fator_brilho: parseFloat(document.getElementById('inFatorBrilho').value),
-    brilho_maximo: parseFloat(inBrilhoMaximo.value)
+    brilho_maximo: parseFloat(inBrilhoMaximo.value),
+    paleta: document.getElementById('inPaleta').value
   };
 
   try {

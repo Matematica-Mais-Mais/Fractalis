@@ -2,16 +2,25 @@
   --bg: #0b0f19;
   --card: #151b28;
   --border: #262f45;
+  --border-hover: #3b4963;
+
   --text: #e2e8f0;
   --muted: #64748b;
+
   --accent: #38bdf8;
   --accent-hover: #0284c7;
+
   --error: #f43f5e;
+
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   background: var(--bg);
@@ -19,6 +28,7 @@ body {
   font-family: var(--font-sans);
   min-height: 100vh;
   padding: 24px;
+
   display: flex;
   justify-content: center;
 }
@@ -26,16 +36,21 @@ body {
 .container {
   width: 100%;
   max-width: 1100px;
+
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* Topo */
+/* =========================================================
+   TOPO
+   ========================================================= */
+
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
@@ -52,7 +67,10 @@ header {
   margin-top: 2px;
 }
 
-/* Layout principal */
+/* =========================================================
+   LAYOUT PRINCIPAL
+   ========================================================= */
+
 .app-layout {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -60,15 +78,22 @@ header {
 }
 
 @media (max-width: 768px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Cartões / Painéis */
+/* =========================================================
+   PAINÉIS
+   ========================================================= */
+
 .panel {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
+
   padding: 20px;
+
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -79,12 +104,17 @@ header {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+
   color: var(--muted);
+
   border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
 
-/* Formulario */
+/* =========================================================
+   FORMULÁRIO
+   ========================================================= */
+
 .field {
   display: flex;
   flex-direction: column;
@@ -96,19 +126,115 @@ label {
   color: var(--text);
 }
 
-input {
+/* Inputs e Select */
+
+input,
+select {
+  width: 100%;
+  height: 38px;
+
   background: var(--bg);
   border: 1px solid var(--border);
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  padding: 8px 12px;
   border-radius: 6px;
+
+  color: var(--text);
+
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+
   outline: none;
-  width: 100%;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 
-input:focus { border-color: var(--accent); }
+/* Inputs */
+
+input {
+  padding: 8px 12px;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent);
+
+  box-shadow:
+    0 0 0 2px rgba(56, 189, 248, 0.12);
+}
+
+/* =========================================================
+   SELECT / PALETA
+   ========================================================= */
+
+#inPaleta {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  position: relative;
+
+  padding: 0 40px 0 12px;
+
+  cursor: pointer;
+
+  background-color: var(--bg);
+
+  /* Seta personalizada */
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent 50%,
+      var(--muted) 50%
+    ),
+    linear-gradient(
+      135deg,
+      var(--muted) 50%,
+      transparent 50%
+    );
+
+  background-position:
+    calc(100% - 16px) 16px,
+    calc(100% - 11px) 16px;
+
+  background-size:
+    5px 5px,
+    5px 5px;
+
+  background-repeat: no-repeat;
+}
+
+#inPaleta:hover {
+  border-color: var(--border-hover);
+}
+
+#inPaleta:focus {
+  border-color: var(--accent);
+
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent 50%,
+      var(--accent) 50%
+    ),
+    linear-gradient(
+      135deg,
+      var(--accent) 50%,
+      transparent 50%
+    );
+}
+
+/* Opções do Select */
+
+#inPaleta option {
+  background: var(--card);
+  color: var(--text);
+}
+
+/* =========================================================
+   CAMPOS EM DUAS COLUNAS
+   ========================================================= */
 
 .row-2 {
   display: grid;
@@ -116,35 +242,54 @@ input:focus { border-color: var(--accent); }
   gap: 10px;
 }
 
-/* Checkbox (ex.: ligar/desligar o brilho) */
+/* =========================================================
+   CHECKBOX
+   ========================================================= */
+
 .checkbox-field {
   display: flex;
   align-items: center;
   gap: 8px;
+
   cursor: pointer;
 }
 
 input[type="checkbox"] {
   width: 16px;
   height: 16px;
+
   padding: 0;
+
   border: none;
   background: transparent;
+
   accent-color: var(--accent);
+
   cursor: pointer;
 }
 
-/* Slider (ex.: brilho máximo) */
+/* =========================================================
+   SLIDER
+   ========================================================= */
+
 input[type="range"] {
   width: 100%;
+  height: 20px;
+
   padding: 0;
+
   border: none;
   background: transparent;
+
   accent-color: var(--accent);
+
   cursor: pointer;
 }
 
-/* Botões de atalho (Presets) */
+/* =========================================================
+   PRESETS
+   ========================================================= */
+
 .presets {
   display: flex;
   flex-wrap: wrap;
@@ -154,73 +299,134 @@ input[type="range"] {
 .preset-btn {
   background: var(--bg);
   border: 1px solid var(--border);
+
   color: var(--muted);
+
   font-family: var(--font-mono);
   font-size: 0.75rem;
+
   padding: 4px 8px;
+
   border-radius: 4px;
+
   cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
-.preset-btn:hover { border-color: var(--accent); color: var(--text); }
+.preset-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
 
-/* Ações */
+  background: rgba(56, 189, 248, 0.05);
+}
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+
 .btn-main {
   background: var(--accent);
   color: #000;
+
   border: none;
+
   font-weight: 600;
   font-size: 0.9rem;
+
   padding: 10px;
+
   border-radius: 6px;
+
   cursor: pointer;
-  transition: background 0.15s;
+
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease;
 }
 
-.btn-main:hover { background: var(--accent-hover); }
+.btn-main:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+.btn-main:active {
+  transform: translateY(1px);
+}
 
 .btn-sub {
   background: transparent;
   color: var(--text);
+
   border: 1px solid var(--border);
+
   padding: 8px;
+
   border-radius: 6px;
+
   cursor: pointer;
+
   font-size: 0.85rem;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
-.btn-sub:hover { border-color: var(--text); }
+.btn-sub:hover {
+  border-color: var(--text);
+  background: rgba(255, 255, 255, 0.02);
+}
 
-/* Visualizador */
+/* =========================================================
+   VISUALIZADOR
+   ========================================================= */
+
 .viewport {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   background: var(--bg);
+
   border: 1px solid var(--border);
   border-radius: 6px;
+
   position: relative;
+
   aspect-ratio: 1 / 1;
+
   overflow: hidden;
 }
 
 canvas {
   width: 100%;
   height: 100%;
+
   object-fit: contain;
+
   image-rendering: pixelated;
 }
 
 .placeholder {
   position: absolute;
+
   color: var(--muted);
+
   font-family: var(--font-mono);
   font-size: 0.85rem;
+
   text-align: center;
 }
 
-/* Métricas */
+/* =========================================================
+   MÉTRICAS
+   ========================================================= */
+
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -229,16 +435,23 @@ canvas {
 
 .stat-card {
   background: var(--bg);
+
   border: 1px solid var(--border);
+
   padding: 10px;
+
   border-radius: 6px;
 }
 
 .stat-card span {
   display: block;
+
   font-size: 0.7rem;
+
   color: var(--muted);
+
   text-transform: uppercase;
+
   font-family: var(--font-mono);
 }
 
@@ -247,13 +460,19 @@ canvas {
   font-size: 1rem;
 }
 
-/* Raízes */
+/* =========================================================
+   RAÍZES
+   ========================================================= */
+
 .roots-container {
   display: flex;
   flex-direction: column;
   gap: 6px;
+
   max-height: 120px;
+
   overflow-y: auto;
+
   font-family: var(--font-mono);
   font-size: 0.8rem;
 }
@@ -267,5 +486,55 @@ canvas {
 .dot {
   width: 8px;
   height: 8px;
+
   border-radius: 50%;
+
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.roots-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.roots-container::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+.roots-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+.roots-container::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 500px) {
+  body {
+    padding: 12px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .title h1 {
+    font-size: 1rem;
+  }
 }
