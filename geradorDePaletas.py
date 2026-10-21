@@ -20,7 +20,10 @@ gera um erro em vez de inventar cores novas.
 """
 
 import colorsys
+import matplotlib.pyplot as plt
+import seaborn as sbn
 
+#paletas base, para ter a possibilidade de adicionar alguma nova externamente.
 PALETAS = {
     "homeblue": [
         "#003E8F",
@@ -28,16 +31,34 @@ PALETAS = {
         "#8F5E01",
         "#14243A",
         "#FFD482",
-        "#ADD0FF",
+        "#ADD0FF"
     ],
     "coldblues": [
         "#68b2f8",
         "#506ee5",
         "#7037cd",
         "#651f71",
-        "#1d0c20",
-    ],
+        "#1d0c20"
+    ]
 }
+
+#Essa sequencia de codigo pega paletas baseadas no seaborn, como há muitas, estou pegando somente 60.
+MAX_PALETAS = 60
+paletas_nome = list(sbn.palettes.SEABORN_PALETTES.keys()) + list(plt.colormaps())
+for paletas_string in paletas_nome[:MAX_PALETAS]:
+    try:
+        #recupera a paleta
+        paleta = sbn.color_palette(paletas_string)
+        #Pegamos os valores hex da paleta
+        hex_colors = paleta.as_hex()
+        #atribui elas ao dicionario
+        PALETAS[paletas_string] = hex_colors
+    except Exception:
+        continue
+
+def nomes_das_paletas():
+    global PALETAS
+    return list(PALETAS.keys())
 
 
 def _hex_para_rgb(cor_hex):
@@ -112,6 +133,7 @@ def gerador_de_paletas_PD(nome_paleta, quantidade_raizes, gerar_automaticamente=
 
 
 if __name__ == "__main__":
+    print(PALETAS)
     for n in (2, 6, 8, 12):
         print(n, "->", gerar_cores("homeblue", n))
 

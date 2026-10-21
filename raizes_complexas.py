@@ -2,9 +2,10 @@ import numpy as np
 from PIL import Image
 import sys
 import colorsys
-from sympy import diff, lambdify, solve, symbols, solveset, nsolve, ConditionSet, Interval, pi
+from sympy import diff, lambdify, solve, symbols, solveset, nsolve, ConditionSet, Interval, pi, sympify
+from pathlib import Path
 
-from geradorDePaletas import gerador_de_paletas_PD
+from geradorDePaletas import gerador_de_paletas_PD, nomes_das_paletas
 
 # ===============ÁREA DE DEBUG===============
 # Tudo aqui dentro só roda se você executar o python raizes_complexas.py
@@ -180,9 +181,12 @@ def debug():
     # subir o Flask nem passar pela interface web. Agora também aceita
     # trigonométricas (ex: cos(x)) e composições (ex: x**2 - sin(x)).
     x = symbols("x")
-    polinomio_debug = x**3 - 1
+    polinomio_debug = sympify(x**3 - 2*x)
     derivada_debug = diff(polinomio_debug, x)
- 
+    
+    #Paleta, use None para usar a geração automatica
+    nome_da_paleta = "plasma"
+    
     raizes = encontrar_raizes(polinomio_debug, x)
     print("Raízes encontradas:", raizes)
  
@@ -194,13 +198,19 @@ def debug():
     malha_complexa = criar_malha_complexa(LARGURA_IMAGEM, ALTURA_IMAGEM)
     valores_finais, pontos_ativos, iteracoes_de_convergencia = metodo_de_newton_vetorizado(malha_complexa)
     cores_da_imagem, pixels_sem_convergencia = colorir_por_raiz(
-        valores_finais, pontos_ativos, numero_de_raizes, iteracoes_de_convergencia
+        valores_finais, pontos_ativos, numero_de_raizes, iteracoes_de_convergencia, nome_da_paleta
     )
  
     print(f"Pixels sem raiz reconhecida: {pixels_sem_convergencia.sum()}")
  
     imagem = Image.fromarray(cores_da_imagem)
+    nome_da_imagem = str(polinomio_debug).replace("**", "^").replace("*", "").replace("/", "÷") 
+    if(nome_da_paleta is not None):
+        nome_da_imagem = nome_da_imagem + f"-paleta-{nome_da_paleta}"
     imagem.show()
+    Path("./img").mkdir(parents=True, exist_ok=True)
+    imagem.save(f"./img/{nome_da_imagem}.jpg")
+    
 
 
 if __name__ == "__main__":

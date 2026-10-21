@@ -112,6 +112,11 @@ def gerar():
         return jsonify({"sucesso": False, "erro": str(e)}), 400
 
 
+@app.route("/api/nome_paletas")
+def get_nome_paletas():
+    return jsonify(script_orig.nomes_das_paletas())
+
+
 def abrir_navegador():
     webbrowser.open_new("http://127.0.0.1:5000/")
 

@@ -6,7 +6,7 @@ echo.
 
 :: --icon="icone.ico"
 
-python -m PyInstaller --noconfirm --onefile --name "Fractalis" --add-data "templates;templates" --add-data "static;static" --add-data "raizes_complexas.py;." --add-data "geradorDePaletas.py;." app.py
+python -m PyInstaller --noconfirm --onefile --name "Fractalis" --add-data "templates;templates" --add-data "static;static" --add-data "raizes_complexas.py;." --add-data "geradorDePaletas.py;." --collect-all seaborn app.py
 
 echo.
 if %ERRORLEVEL% EQU 0 (

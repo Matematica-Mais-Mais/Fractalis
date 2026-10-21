@@ -34,6 +34,23 @@ function setPaleta(val, botaoClicado) {
   botaoClicado.classList.add('active');
 }
 
+const primeiraLetraEmMaisculo = str => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+
+async function addPaletasOptions(){
+  const pselect = document.getElementById("inPaleta");
+  try{
+    const response = await fetch('/api/nome_paletas');
+    const data = await response.json();
+    data.forEach(e => {
+      const option = document.createElement("option");
+      option.value = e;
+      option.innerText = primeiraLetraEmMaisculo(e);
+      pselect.appendChild(option);
+    })
+  } catch(e) { alert("Erro ao tentar obter os nomes das paletas!"); }
+}
+addPaletasOptions();
+
 async function gerarFractal() {
   const btn = document.getElementById('btnGerar');
   const btnBaixar = document.getElementById('btnBaixar');
